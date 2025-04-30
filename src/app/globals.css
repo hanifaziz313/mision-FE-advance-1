@@ -24,3 +24,9 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+.border-orange {
+  border-color: #f64920;
+}
+.hover\:text-orange:hover {
+  color: #f64920;
+}
