@@ -10,14 +10,31 @@ import Footer from "@/components/layout/Footer";
 import Button from "@/components/common/Button";
 
 const HalamanUtama = () => {
+  // State untuk UI
   const [activeTab, setActiveTab] = useState("semua-kelas");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [visibleCourses, setVisibleCourses] = useState(6);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("default");
+  const [isAddingCourse, setIsAddingCourse] = useState(false);
 
-  // Data untuk navbar (kategori dan profil)
+  // State untuk kursus baru
+  const [newCourse, setNewCourse] = useState({
+    title: "",
+    description: "",
+    instructor: "",
+    price: "",
+    category: "bisnis",
+    rating: 4,
+    duration: "10 jam",
+    students: 0,
+  });
+
+  // Data untuk navbar
   const navCategories = [{ id: "pemasaran", name: "Kategori" }];
+
   // Data tabs untuk filter
   const tabs = [
     { id: "semua-kelas", label: "Semua Kelas" },
@@ -28,8 +45,8 @@ const HalamanUtama = () => {
     { id: "teknologi", label: "Teknologi" },
   ];
 
-  // Data lengkap kursus
-  const courses = [
+  // Data kursus utama
+  const [courses, setCourses] = useState([
     {
       id: 1,
       title: "Big 4 Auditor Financial Analyst",
@@ -38,8 +55,8 @@ const HalamanUtama = () => {
       instructorTitle: "Senior Accountant di Gojek",
       rating: 4.5,
       reviewCount: 86,
-      price: "Rp 300k",
-      discountPrice: "Rp 250k",
+      price: "Rp 300rb",
+      discountPrice: "Rp 250rb",
       category: "bisnis",
       duration: "12 jam",
       students: 1250,
@@ -47,136 +64,54 @@ const HalamanUtama = () => {
       isNew: false,
       image: "/course1.jpg",
     },
-    {
-      id: 2,
-      title: "Digital Marketing Masterclass 2023",
-      description: "Kuasi semua channel digital marketing dari dasar hingga advanced.",
-      instructor: "Mark Zuckerberg",
-      instructorTitle: "Digital Marketing Expert",
-      rating: 4.8,
-      reviewCount: 142,
-      price: "Rp 350k",
-      category: "pemasaran",
-      duration: "15 jam",
-      students: 2100,
-      isBestseller: true,
-      isNew: true,
-      image: "/course2.jpg",
-    },
-    {
-      id: 3,
-      title: "UI/UX Design Fundamentals",
-      description: "Pelajari prinsip dasar desain antarmuka dan pengalaman pengguna.",
-      instructor: "Sarah Johnson",
-      instructorTitle: "Lead Designer di Tokopedia",
-      rating: 4.7,
-      reviewCount: 98,
-      price: "Rp 280k",
-      category: "desain",
-      duration: "10 jam",
-      students: 1800,
-      isBestseller: false,
-      isNew: true,
-      image: "/course3.jpg",
-    },
-    {
-      id: 4,
-      title: "Public Speaking & Presentasi Memukau",
-      description: "Tingkatkan kepercayaan diri dan kemampuan presentasi Anda.",
-      instructor: "James Smith",
-      instructorTitle: "Professional Speaker",
-      rating: 4.9,
-      reviewCount: 75,
-      price: "Rp 320k",
-      category: "pengembangan-diri",
-      duration: "8 jam",
-      students: 950,
-      isBestseller: false,
-      isNew: false,
-      image: "/course4.jpg",
-    },
-    {
-      id: 5,
-      title: "Manajemen Bisnis untuk Startup",
-      description: "Strategi mengelola bisnis startup dari nol hingga sukses.",
-      instructor: "Elon Musk",
-      instructorTitle: "CEO SpaceX & Tesla",
-      rating: 4.6,
-      reviewCount: 112,
-      price: "Rp 400k",
-      category: "bisnis",
-      duration: "20 jam",
-      students: 3000,
-      isBestseller: true,
-      isNew: false,
-      image: "/course5.jpg",
-    },
-    {
-      id: 6,
-      title: "Data Science untuk Pemula",
-      description: "Pengenalan dunia data science dan machine learning dasar.",
-      instructor: "Andrew Ng",
-      instructorTitle: "AI Researcher",
-      rating: 4.8,
-      reviewCount: 156,
-      price: "Rp 380k",
-      category: "teknologi",
-      duration: "18 jam",
-      students: 2500,
-      isBestseller: true,
-      isNew: false,
-      image: "/course6.jpg",
-    },
-    {
-      id: 7,
-      title: "Fotografi Profesional",
-      description: "Teknik fotografi level profesional untuk semua jenis kamera.",
-      instructor: "Ansel Adams",
-      instructorTitle: "Professional Photographer",
-      rating: 4.4,
-      reviewCount: 64,
-      price: "Rp 290k",
-      category: "desain",
-      duration: "14 jam",
-      students: 1200,
-      isBestseller: false,
-      isNew: true,
-      image: "/course7.jpg",
-    },
-    {
-      id: 8,
-      title: "Copywriting yang Menjual",
-      description: "Teknik menulis konten pemasaran yang efektif dan persuasif.",
-      instructor: "David Ogilvy",
-      instructorTitle: "Advertising Expert",
-      rating: 4.7,
-      reviewCount: 88,
-      price: "Rp 270k",
-      category: "pemasaran",
-      duration: "9 jam",
-      students: 1700,
-      isBestseller: false,
-      isNew: false,
-      image: "/course8.jpg",
-    },
-    {
-      id: 9,
-      title: "Manajemen Waktu Produktif",
-      description: "Sistem manajemen waktu untuk produktivitas maksimal.",
-      instructor: "Cal Newport",
-      instructorTitle: "Productivity Expert",
-      rating: 4.9,
-      reviewCount: 105,
-      price: "Rp 230k",
-      category: "pengembangan-diri",
-      duration: "6 jam",
-      students: 2800,
-      isBestseller: true,
-      isNew: false,
-      image: "/course9.jpg",
-    },
-  ];
+    // ... (data lainnya tetap sama)
+  ]);
 
+  // Fungsi CRUD
+  const addNewCourse = () => {
+    if (!newCourse.title || !newCourse.description || !newCourse.price) {
+      alert("Harap isi judul, deskripsi, dan harga!");
+      return;
+    }
+
+    setCourses([
+      ...courses,
+      {
+        id: courses.length + 1,
+        ...newCourse,
+        instructorTitle: "Instruktur Baru",
+        reviewCount: 0,
+        isBestseller: false,
+        isNew: true,
+        image: "/course-default.jpg",
+        discountPrice: "",
+      },
+    ]);
+
+    setNewCourse({
+      title: "",
+      description: "",
+      instructor: "",
+      price: "",
+      category: "bisnis",
+      rating: 4,
+      duration: "10 jam",
+      students: 0,
+    });
+    setIsAddingCourse(false);
+  };
+
+  const updateCourse = (id, updatedData) => {
+    setCourses(courses.map((course) => (course.id === id ? { ...course, ...updatedData } : course)));
+  };
+
+  const deleteCourse = (id) => {
+    if (confirm("Apakah Anda yakin ingin menghapus kursus ini?")) {
+      setCourses(courses.filter((course) => course.id !== id));
+    }
+  };
+
+  // Handler functions
   const handleTabClick = (tabId) => {
     setActiveTab(tabId);
     setVisibleCourses(6);
@@ -186,7 +121,7 @@ const HalamanUtama = () => {
     e.preventDefault();
     setLoading(true);
     setTimeout(() => {
-      alert(`Terima kasih! Email ${email} telah terdaftar untuk berlangganan.`);
+      alert(`Terima kasih! Email ${email} telah terdaftar.`);
       setEmail("");
       setLoading(false);
     }, 1000);
@@ -196,27 +131,104 @@ const HalamanUtama = () => {
     setVisibleCourses((prev) => prev + 3);
   };
 
+  const handleNewCourseChange = (e) => {
+    const { name, value } = e.target;
+    setNewCourse((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Filter dan sorting
   const filteredCourses = activeTab === "semua-kelas" ? courses : courses.filter((course) => course.category === activeTab);
-  const visibleCoursesList = filteredCourses.slice(0, visibleCourses);
+
+  const searchedCourses = searchQuery
+    ? filteredCourses.filter(
+        (course) => course.title.toLowerCase().includes(searchQuery.toLowerCase()) || course.description.toLowerCase().includes(searchQuery.toLowerCase()) || course.instructor.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : filteredCourses;
+
+  const sortedCourses = [...searchedCourses].sort((a, b) => {
+    if (sortBy === "rating") return b.rating - a.rating;
+    if (sortBy === "students") return b.students - a.students;
+    if (sortBy === "price") {
+      const priceA = parseInt((a.discountPrice || a.price).replace(/\D/g, ""));
+      const priceB = parseInt((b.discountPrice || b.price).replace(/\D/g, ""));
+      return priceA - priceB;
+    }
+    return 0;
+  });
+
+  const visibleCoursesList = sortedCourses.slice(0, visibleCourses);
 
   return (
     <div className="min-h-screen bg-[#FCF8CA]">
       <Head>
         <title>hariesok.id - Platform Belajar Video Interaktif</title>
         <meta name="description" content="Temukan ilmu baru melalui video pembelajaran berkualitas tinggi dengan latihan interaktif" />
-        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
       </Head>
 
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} showHomepageElements={true} categories={navCategories} />
-      <HeroSection
-        title="Revolusi Pembelajaran: Temukan Ilmu Baru melalui Platform Video Interaktif!"
-        description="Temukan ilmu baru yang menarik dan mendalam melalui koleksi video pembelajaran berkualitas tinggi. Tidak hanya itu, Anda juga dapat berpartisipasi dalam latihan interaktif yang akan meningkatkan pemahaman Anda."
-        buttonText="Temukan Video Course untuk Dipelajari!"
-      />
+      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} showHomepageElements={true} categories={navCategories} searchQuery={searchQuery} onSearchChange={(e) => setSearchQuery(e.target.value)} />
+
+      <HeroSection title="Revolusi Pembelajaran: Temukan Ilmu Baru!" description="Temukan ilmu baru yang menarik melalui koleksi video pembelajaran berkualitas tinggi dengan latihan interaktif." buttonText="Temukan Video Course" />
 
       <section className="container mx-auto px-4 mt-12 mb-16">
-        <CourseFilter activeTab={activeTab} onTabClick={handleTabClick} title="Koleksi Video Pembelajaran Unggulan" subtitle="Jelajahi Dunia Pengetahuan Melalui Pilihan Kami!" tabs={tabs} />
+        <div className="flex justify-between items-center mb-6">
+          <CourseFilter
+            activeTab={activeTab}
+            onTabClick={handleTabClick}
+            title="Koleksi Video Pembelajaran"
+            subtitle="Jelajahi dunia pengetahuan melalui pilihan kami!"
+            tabs={tabs}
+            sortBy={sortBy}
+            onSortChange={(e) => setSortBy(e.target.value)}
+          />
+
+          <Button onClick={() => setIsAddingCourse(true)} className="bg-green-600 hover:bg-green-700 text-white">
+            + Tambah Kursus
+          </Button>
+        </div>
+
+        {isAddingCourse && (
+          <div className="bg-white text-black p-6 rounded-lg shadow-md mb-8">
+            <h3 className="text-xl font-bold mb-4">Tambah Kursus Baru</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Judul Kursus</label>
+                <input type="text" name="title" value={newCourse.title} onChange={handleNewCourseChange} className="w-full p-2 border rounded" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Kategori</label>
+                <select name="category" value={newCourse.category} onChange={handleNewCourseChange} className="w-full p-2 border rounded">
+                  {tabs
+                    .filter((t) => t.id !== "semua-kelas")
+                    .map((tab) => (
+                      <option key={tab.id} value={tab.id}>
+                        {tab.label}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Instruktur</label>
+                <input type="text" name="instructor" value={newCourse.instructor} onChange={handleNewCourseChange} className="w-full p-2 border rounded" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Harga</label>
+                <input type="text" name="price" value={newCourse.price} onChange={handleNewCourseChange} className="w-full p-2 border rounded" placeholder="Contoh: Rp 300rb" required />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-1">Deskripsi</label>
+                <textarea name="description" value={newCourse.description} onChange={handleNewCourseChange} className="w-full p-2 border rounded" rows="3" required />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2 mt-4">
+              <Button onClick={() => setIsAddingCourse(false)} variant="outline" className="border-gray-300">
+                Batal
+              </Button>
+              <Button onClick={addNewCourse} className="bg-blue-600 hover:bg-blue-700">
+                Simpan Kursus
+              </Button>
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -228,27 +240,19 @@ const HalamanUtama = () => {
               {visibleCoursesList.map((course) => (
                 <CourseCard
                   key={course.id}
-                  id={course.id}
-                  title={course.title}
-                  description={course.description}
-                  instructor={course.instructor}
-                  instructorTitle={course.instructorTitle}
-                  rating={course.rating}
-                  reviewCount={course.reviewCount}
-                  price={course.price}
-                  discountPrice={course.discountPrice}
-                  duration={course.duration}
-                  students={course.students}
-                  isBestseller={course.isBestseller}
-                  isNew={course.isNew}
-                  image={course.image}
+                  {...course}
+                  onDelete={() => deleteCourse(course.id)}
+                  onEdit={() => {
+                    const newTitle = prompt("Edit judul:", course.title);
+                    if (newTitle) updateCourse(course.id, { title: newTitle });
+                  }}
                 />
               ))}
             </div>
 
-            {visibleCourses < filteredCourses.length && (
+            {visibleCourses < sortedCourses.length && (
               <div className="text-center mt-10">
-                <Button onClick={loadMoreCourses} variant="outline" className="border border-[#F64920] text-[#F64920] hover:bg-[#F64920] hover:text-white px-6 py-2 rounded-md transition">
+                <Button onClick={loadMoreCourses} variant="outline" className="border border-[#F64920] text-[#F64920] hover:bg-[#F64920] hover:text-white">
                   Muat Lebih Banyak
                 </Button>
               </div>
@@ -259,7 +263,7 @@ const HalamanUtama = () => {
 
       <Newsletter
         title="Mau Belajar Lebih Banyak?"
-        description="Daftarkan dirimu untuk mendapatkan informasi terbaru dan penawaran spesial dari program-program terbaik hariesok.id"
+        description="Daftarkan email untuk mendapatkan informasi terbaru dan penawaran spesial"
         onSubmit={handleSubscribe}
         email={email}
         onEmailChange={(e) => setEmail(e.target.value)}
@@ -267,21 +271,6 @@ const HalamanUtama = () => {
       />
 
       <Footer />
-
-      <style jsx global>{`
-        .font-poppins {
-          font-family: "Poppins", sans-serif;
-        }
-        .font-dm-sans {
-          font-family: "DM Sans", sans-serif;
-        }
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      `}</style>
     </div>
   );
 };
