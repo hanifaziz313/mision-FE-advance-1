@@ -7,12 +7,7 @@ import PasswordInput from "@/components/auth/PasswordInput";
 import Button from "@/components/common/Button";
 import SocialLogin from "@/components/auth/SocialLogin";
 import { useRouter } from "next/navigation";
-
-// Data dummy untuk simulasi login
-const dummyUsers = [
-  { id: 1, email: "user1@example.com", password: "password123" },
-  { id: 2, email: "user2@example.com", password: "password456" },
-];
+import { userApi } from "@/services/api";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -28,22 +23,27 @@ const LoginPage = () => {
     setError(""); // Reset error ketika user mulai mengetik
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulasi proses login
-    setTimeout(() => {
-      const user = dummyUsers.find((user) => user.email === formData.email && user.password === formData.password);
-      console.log(user, dummyUsers);
+    try {
+      const users = await userApi.getAllUsers();
+      const user = users.find((u) => u.email === formData.email && u.password === formData.password);
+
       if (user) {
-        console.log("Login berhasil:", user);
+        alert("Login berhasil!");
+        localStorage.setItem("user", JSON.stringify(user));
         router.push("/home");
       } else {
         setError("Email atau password salah");
       }
+    } catch (err) {
+      console.error("Gagal login:", err);
+      setError("Terjadi kesalahan saat login.");
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -56,24 +56,15 @@ const LoginPage = () => {
             {error && <div className="mb-4 p-2 bg-red-100 text-red-700 rounded-md text-sm">{error}</div>}
 
             <Input label="E-Mail" type="email" name="email" value={formData.email} onChange={handleChange} required />
-
             <PasswordInput label="Password" name="password" value={formData.password} onChange={handleChange} required />
 
             <div className="space-y-3">
               <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading ? "Memproses..." : "Masuk"}
               </Button>
-
               <Button variant="outline" type="button" onClick={() => router.push("/register")} className="w-full">
                 Daftar
               </Button>
-
-              <SocialLogin
-                onGoogleLogin={() => {
-                  console.log("Login dengan Google");
-                  router.push("https://accounts.google.com");
-                }}
-              />
             </div>
           </form>
         </AuthForm>

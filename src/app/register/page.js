@@ -9,9 +9,7 @@ import Button from "@/components/common/Button";
 import SocialLogin from "@/components/auth/SocialLogin";
 import { countryFlags } from "@/constants/countryFlags";
 import { useRouter } from "next/navigation";
-
-// Data dummy untuk menyimpan user yang terdaftar
-let registeredUsers = [];
+import { userApi } from "@/services/api";
 
 const RegisterPage = () => {
   const router = useRouter();
@@ -28,7 +26,6 @@ const RegisterPage = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    // Hapus error saat user mulai mengetik
     if (errors[e.target.name]) {
       setErrors({ ...errors, [e.target.name]: "" });
     }
@@ -65,7 +62,7 @@ const RegisterPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -74,22 +71,21 @@ const RegisterPage = () => {
 
     setIsLoading(true);
 
-    // Simulasi proses registrasi
-    setTimeout(() => {
-      const newUser = {
-        id: Date.now(),
+    try {
+      // Kirim data registrasi ke API
+      await userApi.registerUser({
         ...formData,
         countryCode,
-        registeredAt: new Date().toISOString(),
-      };
+      });
 
-      registeredUsers.push(newUser);
-      console.log("User terdaftar:", newUser);
-      console.log("Semua user terdaftar:", registeredUsers);
-
+      alert("Registrasi berhasil! Silakan login.");
+      router.push("/login");
+    } catch (err) {
+      console.error("Gagal mendaftar:", err);
+      alert("Terjadi kesalahan saat registrasi.");
+    } finally {
       setIsLoading(false);
-      router.push("/");
-    }, 1500);
+    }
   };
 
   return (
@@ -100,13 +96,9 @@ const RegisterPage = () => {
         <AuthForm title="Pendaftaran Akun" subtitle="Yuk, daftarkan akunmu sekarang juga!">
           <form onSubmit={handleSubmit} className="text-[#333333AD]">
             <Input label="Nama Lengkap" name="name" value={formData.name} onChange={handleChange} placeholder="Masukan Nama" required error={errors.name} />
-
             <Input label="E-Mail" type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Masukkan email" required error={errors.email} />
-
             <PhoneInput label="No.Hp" name="phone" value={formData.phone} onChange={handleChange} countryCode={countryCode} onCountryChange={(e) => setCountryCode(e.target.value)} countryFlags={countryFlags} required error={errors.phone} />
-
             <PasswordInput label="Password" name="password" value={formData.password} onChange={handleChange} required error={errors.password} />
-
             <PasswordInput label="Konfirmasi Password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required error={errors.confirmPassword} />
 
             <div className="text-right mt-1 mb-4">
@@ -119,17 +111,9 @@ const RegisterPage = () => {
               <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading ? "Mendaftarkan..." : "Daftar"}
               </Button>
-
-              <Button variant="secondary" type="button" onClick={() => router.push("/")} className="w-full">
+              <Button variant="secondary" type="button" onClick={() => router.push("/login")} className="w-full">
                 Masuk
               </Button>
-
-              <SocialLogin
-                onGoogleLogin={() => {
-                  console.log("Login dengan Google");
-                  router.push("https://accounts.google.com");
-                }}
-              />
             </div>
           </form>
         </AuthForm>

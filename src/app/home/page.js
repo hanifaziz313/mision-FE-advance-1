@@ -9,6 +9,9 @@ import Newsletter from "@/components/layout/Newsletter";
 import Footer from "@/components/layout/Footer";
 import Button from "@/components/common/Button";
 
+// Import custom hook
+import useCourseApi from "@/hooks/useCourseApi";
+
 const HalamanUtama = () => {
   // State untuk UI
   const [activeTab, setActiveTab] = useState("semua-kelas");
@@ -32,9 +35,6 @@ const HalamanUtama = () => {
     students: 0,
   });
 
-  // Data untuk navbar
-  const navCategories = [{ id: "pemasaran", name: "Kategori" }];
-
   // Data tabs untuk filter
   const tabs = [
     { id: "semua-kelas", label: "Semua Kelas" },
@@ -45,71 +45,8 @@ const HalamanUtama = () => {
     { id: "teknologi", label: "Teknologi" },
   ];
 
-  // Data kursus utama
-  const [courses, setCourses] = useState([
-    {
-      id: 1,
-      title: "Big 4 Auditor Financial Analyst",
-      description: "Pelajari analisis keuangan tingkat lanjut dari auditor berpengalaman di Big 4.",
-      instructor: "Jenna Ortega",
-      instructorTitle: "Senior Accountant di Gojek",
-      rating: 4.5,
-      reviewCount: 86,
-      price: "Rp 300rb",
-      discountPrice: "Rp 250rb",
-      category: "bisnis",
-      duration: "12 jam",
-      students: 1250,
-      isBestseller: true,
-      isNew: false,
-      image: "/course1.jpg",
-    },
-    // ... (data lainnya tetap sama)
-  ]);
-
-  // Fungsi CRUD
-  const addNewCourse = () => {
-    if (!newCourse.title || !newCourse.description || !newCourse.price) {
-      alert("Harap isi judul, deskripsi, dan harga!");
-      return;
-    }
-
-    setCourses([
-      ...courses,
-      {
-        id: courses.length + 1,
-        ...newCourse,
-        instructorTitle: "Instruktur Baru",
-        reviewCount: 0,
-        isBestseller: false,
-        isNew: true,
-        image: "/course-default.jpg",
-        discountPrice: "",
-      },
-    ]);
-
-    setNewCourse({
-      title: "",
-      description: "",
-      instructor: "",
-      price: "",
-      category: "bisnis",
-      rating: 4,
-      duration: "10 jam",
-      students: 0,
-    });
-    setIsAddingCourse(false);
-  };
-
-  const updateCourse = (id, updatedData) => {
-    setCourses(courses.map((course) => (course.id === id ? { ...course, ...updatedData } : course)));
-  };
-
-  const deleteCourse = (id) => {
-    if (confirm("Apakah Anda yakin ingin menghapus kursus ini?")) {
-      setCourses(courses.filter((course) => course.id !== id));
-    }
-  };
+  // Gunakan custom hook untuk ambil data kursus
+  const { courses, loading: isLoading, error, addCourse, updateCourse, deleteCourse } = useCourseApi();
 
   // Handler functions
   const handleTabClick = (tabId) => {
@@ -136,6 +73,40 @@ const HalamanUtama = () => {
     setNewCourse((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Fungsi tambah kursus
+  const addNewCourse = () => {
+    if (!newCourse.title || !newCourse.description || !newCourse.price) {
+      alert("Harap isi judul, deskripsi, dan harga!");
+      return;
+    }
+
+    const courseToAdd = {
+      title: newCourse.title,
+      description: newCourse.description,
+      instructor: newCourse.instructor,
+      price: newCourse.price,
+      category: newCourse.category,
+      rating: 4,
+      duration: "10 jam",
+      students: 0,
+    };
+
+    addCourse(courseToAdd);
+
+    setNewCourse({
+      title: "",
+      description: "",
+      instructor: "",
+      price: "",
+      category: "bisnis",
+      rating: 4,
+      duration: "10 jam",
+      students: 0,
+    });
+
+    setIsAddingCourse(false);
+  };
+
   // Filter dan sorting
   const filteredCourses = activeTab === "semua-kelas" ? courses : courses.filter((course) => course.category === activeTab);
 
@@ -149,8 +120,8 @@ const HalamanUtama = () => {
     if (sortBy === "rating") return b.rating - a.rating;
     if (sortBy === "students") return b.students - a.students;
     if (sortBy === "price") {
-      const priceA = parseInt((a.discountPrice || a.price).replace(/\D/g, ""));
-      const priceB = parseInt((b.discountPrice || b.price).replace(/\D/g, ""));
+      const priceA = parseInt(a.price.replace(/\D/g, ""));
+      const priceB = parseInt(a.price.replace(/\D/g, ""));
       return priceA - priceB;
     }
     return 0;
@@ -165,7 +136,7 @@ const HalamanUtama = () => {
         <meta name="description" content="Temukan ilmu baru melalui video pembelajaran berkualitas tinggi dengan latihan interaktif" />
       </Head>
 
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} showHomepageElements={true} categories={navCategories} searchQuery={searchQuery} onSearchChange={(e) => setSearchQuery(e.target.value)} />
+      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} showHomepageElements={true} categories={tabs} searchQuery={searchQuery} onSearchChange={(e) => setSearchQuery(e.target.value)} />
 
       <HeroSection title="Revolusi Pembelajaran: Temukan Ilmu Baru!" description="Temukan ilmu baru yang menarik melalui koleksi video pembelajaran berkualitas tinggi dengan latihan interaktif." buttonText="Temukan Video Course" />
 
@@ -180,12 +151,12 @@ const HalamanUtama = () => {
             sortBy={sortBy}
             onSortChange={(e) => setSortBy(e.target.value)}
           />
-
           <Button onClick={() => setIsAddingCourse(true)} className="bg-green-600 hover:bg-green-700 text-white">
             + Tambah Kursus
           </Button>
         </div>
 
+        {/* Form Tambah Kursus */}
         {isAddingCourse && (
           <div className="bg-white text-black p-6 rounded-lg shadow-md mb-8">
             <h3 className="text-xl font-bold mb-4">Tambah Kursus Baru</h3>
@@ -216,7 +187,7 @@ const HalamanUtama = () => {
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium mb-1">Deskripsi</label>
-                <textarea name="description" value={newCourse.description} onChange={handleNewCourseChange} className="w-full p-2 border rounded" rows="3" required />
+                <textarea name="description" value={newCourse.description} onChange={handleNewCourseChange} className="w-full p-2 border rounded" rows="3" required></textarea>
               </div>
             </div>
             <div className="flex justify-end space-x-2 mt-4">
@@ -230,17 +201,27 @@ const HalamanUtama = () => {
           </div>
         )}
 
-        {loading ? (
+        {/* Loading & Error State */}
+        {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#F64920]"></div>
           </div>
+        ) : error ? (
+          <div className="text-red-500 text-center">{error}</div>
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {visibleCoursesList.map((course) => (
                 <CourseCard
                   key={course.id}
-                  {...course}
+                  id={course.id}
+                  title={course.title}
+                  description={course.description}
+                  instructor={course.instructor}
+                  price={course.price}
+                  rating={course.rating}
+                  duration={course.duration}
+                  students={course.students}
                   onDelete={() => deleteCourse(course.id)}
                   onEdit={() => {
                     const newTitle = prompt("Edit judul:", course.title);
@@ -249,7 +230,6 @@ const HalamanUtama = () => {
                 />
               ))}
             </div>
-
             {visibleCourses < sortedCourses.length && (
               <div className="text-center mt-10">
                 <Button onClick={loadMoreCourses} variant="outline" className="border border-[#F64920] text-[#F64920] hover:bg-[#F64920] hover:text-white">
@@ -264,7 +244,7 @@ const HalamanUtama = () => {
       <Newsletter
         title="Mau Belajar Lebih Banyak?"
         description="Daftarkan email untuk mendapatkan informasi terbaru dan penawaran spesial"
-        onSubmit={handleSubscribe}
+        onSubmit={(e) => handleSubscribe(e)}
         email={email}
         onEmailChange={(e) => setEmail(e.target.value)}
         loading={loading}
