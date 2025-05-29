@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import Navbar from "@/components/navbar";
 import AuthForm from "@/components/auth/AuthForm";
@@ -6,10 +7,9 @@ import Input from "@/components/common/Input";
 import PasswordInput from "@/components/auth/PasswordInput";
 import PhoneInput from "@/components/auth/PhoneInput";
 import Button from "@/components/common/Button";
-import SocialLogin from "@/components/auth/SocialLogin";
-import { countryFlags } from "@/constants/countryFlags";
 import { useRouter } from "next/navigation";
 import { userApi } from "@/services/api";
+import { countryFlags } from "@/constants/countryFlags";
 
 const RegisterPage = () => {
   const router = useRouter();
@@ -72,10 +72,11 @@ const RegisterPage = () => {
     setIsLoading(true);
 
     try {
-      // Kirim data registrasi ke API
       await userApi.registerUser({
-        ...formData,
-        countryCode,
+        name: formData.name,
+        email: formData.email,
+        phone: `${countryCode} ${formData.phone}`,
+        password: formData.password,
       });
 
       alert("Registrasi berhasil! Silakan login.");
@@ -101,11 +102,7 @@ const RegisterPage = () => {
             <PasswordInput label="Password" name="password" value={formData.password} onChange={handleChange} required error={errors.password} />
             <PasswordInput label="Konfirmasi Password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required error={errors.confirmPassword} />
 
-            <div className="text-right mt-1 mb-4">
-              <a href="#" className="text-[#333333] hover:text-blue-800 text-sm">
-                Lupa Password?
-              </a>
-            </div>
+            <div className="text-right mt-1 mb-4">{/* Tambahkan link lupa password jika ada */}</div>
 
             <div className="space-y-3">
               <Button type="submit" disabled={isLoading} className="w-full">

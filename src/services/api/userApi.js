@@ -1,20 +1,13 @@
-// services/api/userApi.js
-import axios from "axios";
-
-const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-});
+import api from "./api";
 
 export default {
-  // Daftar user baru
   registerUser: async (userData) => {
-    const response = await apiClient.post("/users", userData);
+    const response = await api.post("/users", userData);
     return response.data;
   },
 
-  // Ambil semua user (untuk simulasi login)
   getAllUsers: async () => {
-    const response = await apiClient.get("/users");
+    const response = await api.get("/users");
     return response.data;
   },
 };

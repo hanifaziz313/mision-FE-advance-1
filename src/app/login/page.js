@@ -1,11 +1,11 @@
 "use client";
+
 import { useState } from "react";
 import Navbar from "@/components/navbar";
 import AuthForm from "@/components/auth/AuthForm";
 import Input from "@/components/common/Input";
 import PasswordInput from "@/components/auth/PasswordInput";
 import Button from "@/components/common/Button";
-import SocialLogin from "@/components/auth/SocialLogin";
 import { useRouter } from "next/navigation";
 import { userApi } from "@/services/api";
 
@@ -20,17 +20,15 @@ const LoginPage = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError(""); // Reset error ketika user mulai mengetik
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       const users = await userApi.getAllUsers();
       const user = users.find((u) => u.email === formData.email && u.password === formData.password);
-
       if (user) {
         alert("Login berhasil!");
         localStorage.setItem("user", JSON.stringify(user));
